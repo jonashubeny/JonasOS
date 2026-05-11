@@ -45,3 +45,20 @@ After success, the ISO is available in:
 ```bash
 out/*.iso
 ```
+
+## Run VM after ISO build
+
+Requirements on host:
+
+- `qemu-system-x86_64`
+- KVM support (`/dev/kvm`)
+
+Run the newest built ISO in QEMU:
+
+```bash
+ISO="$(ls -t out/*.iso | head -n1)"
+qemu-system-x86_64 \
+  -m 4096 \
+  -enable-kvm \
+  -cdrom "$ISO"
+```
