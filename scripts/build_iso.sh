@@ -1,31 +1,26 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-set -euo pipefial
+mkdir -p out
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-LB_DIR="$ROOT_DIR/build/live-build"
-
-if [[ ! -d "$LB_DIR" ]]; then
-  echo "Error: live-build directory not found: $LB_DIR" >&2
-  exit 1
-fi
-
-# This image is only used as a clean build enviroment
-IMAGE="debian:bookworm"
-
-podman run --rm -it \
-  -v "$ROOT_DIR:/work:Z" \
-  -w /work/build/live-build \
-  "$IMAGE" \
-  bash -lc "
+sudo podman run --rm -it --privileged \
+  -v "$PWD:/work:Z" \
+  -v "$PWD/out:/out:Z" \
+  debian:bookworm \
+  bash -lc '
     set -e
     apt update
-    apt install -y live-build debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools
+    apt install -y live-build debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools rsync
+
+    # copy repo into container FS (not a bind mount)
+    rm -rf /tmp/JonasOS
+    rsync -a --exclude out/ /work/ /tmp/JonasOS/
+
+    cd /tmp/JonasOS/build/live-build
     lb clean
     lb config
     lb build
-  "
 
-echo
-echo "Done. Check build output in: $LB_DIR"
-ls -la "$LB_DIR" | sed -n "1,120p"
+    # copy ISO back to host
+    cp -v ./*.iso /out/
+  '
