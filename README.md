@@ -53,12 +53,9 @@ Requirements on host:
 - `qemu-system-x86_64`
 - KVM support (`/dev/kvm`)
 
-Run the newest built ISO in QEMU:
+Run VM using the helper script:
 
 ```bash
-ISO="$(ls -t out/*.iso | head -n1)"
-qemu-system-x86_64 \
-  -m 4096 \
-  -enable-kvm \
-  -cdrom "$ISO"
+chmod +x scripts/run_vm.sh
+./scripts/run_vm.sh
 ```
