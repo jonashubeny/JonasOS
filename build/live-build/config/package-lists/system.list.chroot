@@ -1,0 +1,6 @@
+policykit-1
+gvfs
+gvfs-backends
+network-manager
+network-manager-gnome
+pulseaudio
