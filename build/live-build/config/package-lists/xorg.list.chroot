@@ -1,0 +1,5 @@
+xorg
+xserver-xorg
+x11-xserver-utils
+xinit
+dbus-x11
