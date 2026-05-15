@@ -9,4 +9,10 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 # Defaults
-export EDITOR="${VISUAL:-$EDITOR}"
+export EDITOR="${EDITOR:-nvim}"
+export VISUAL="${VISUAL:-$EDITOR}"
+export PAGER="${PAGER:-less}"
+
+if [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
+  . "$HOME/.bashrc"
+fi
