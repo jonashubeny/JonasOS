@@ -30,7 +30,7 @@ Just to be clear (mostly to future me):
 - This is **not** a serious competitor to Debian/Ubuntu/arch.
 - This is **not** me trying to invent a new kernel or package manager.
 - This is **not** a "perfect" distro with huge user base.
-- This in **not** a pentesting distro like Kali (I just like to vibe)
+- This in **not** a pentesting distro like Kali (I just like the vibe)
 
 ## My first tiny goal (MVP, but I won't pretend it's fancy)
 Step 1: I want JonasOS to **boot**
