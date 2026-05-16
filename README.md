@@ -81,3 +81,33 @@ Host requirements:
 
 - `qemu-system-x86_64`
 - KVM support (`/dev/kvm`)
+
+## Open ISO in GNOME Boxes (Fedora/libvirt)
+
+If GNOME Boxes shows a permission error when opening an ISO from `out/`, copy the ISO into libvirt storage and set the correct ownership/permissions:
+
+```bash
+sudo install -o qemu -g qemu -m 644 \
+  /home/jonas/_JONASOS/JonasOS/out/live-image-amd64.hybrid.iso \
+  /var/lib/libvirt/images/live-image-amd64.hybrid.iso
+```
+
+Allow Boxes to browse the libvirt images directory:
+
+```bash
+sudo chmod 755 /var/lib/libvirt/images
+```
+
+Optional (if SELinux still blocks access):
+
+```bash
+sudo restorecon -v /var/lib/libvirt/images/live-image-amd64.hybrid.iso
+```
+
+Then restart GNOME Boxes and select:
+
+```text
+/var/lib/libvirt/images/live-image-amd64.hybrid.iso
+```
+
+Tip: In the file picker, press `Ctrl+L` and paste the full path directly.
