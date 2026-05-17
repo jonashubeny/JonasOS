@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eu
+
+echo "JonasOS"
+echo "Repo: https://github.com/jonashubeny/JonasOS"
+echo
+
+echo "User: $(id -un)"
+echo "Host: $(hostname)"
+echo "Kernel: $(uname -r)"
