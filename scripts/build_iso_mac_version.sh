@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+
 mkdir -p out
 
-sudo podman run --rm -it --privileged --platform linux/amd64 \
-  -v "$PWD:/work:Z" \
-  -v "$PWD/out:/out:Z" \
+podman run --rm --privileged --platform linux/arm64 \
+  -v "$PWD:/work" \
+  -v "$PWD/out:/out" \
   debian:bookworm \
   bash -lc '
-    set -e
-    apt update
-    apt install -y live-build debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools rsync
+    set -euo pipefail
+    export DEBIAN_FRONTEND=noninteractive
 
-    # copy repo into container FS (not a bind mount)
+    apt update
+apt install -y live-build debootstrap squashfs-tools xorriso grub-efi-arm64-bin mtools rsync
+
     rm -rf /tmp/JonasOS
     rsync -a --exclude out/ /work/ /tmp/JonasOS/
 
@@ -21,7 +24,5 @@ sudo podman run --rm -it --privileged --platform linux/amd64 \
     lb config
     lb build
 
-    # copy ISO back to host
     cp -v ./*.iso /out/
   '
-
