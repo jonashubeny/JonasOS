@@ -1,10 +1,252 @@
 #!/bin/bash
 set -eu
 
-echo "JonasOS"
-echo "Repo: https://github.com/jonashubeny/JonasOS"
-echo
+VERSION="0.1.0"
+REPO_URL="https://github.com/jonashubeny/JonasOS"
 
-echo "User: $(id -un)"
-echo "Host: $(hostname)"
-echo "Kernel: $(uname -r)"
+print_line() {
+    if [ "$#" -eq 0 ]; then
+        printf '\n'
+    else
+        printf '%s\n' "$1"
+    fi
+}
+
+have_command() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+current_user() {
+    if have_command id; then
+        id -un 2>/dev/null || printf '%s\n' "${USER:-unknown}"
+    elif have_command whoami; then
+        whoami 2>/dev/null || printf '%s\n' "${USER:-unknown}"
+    else
+        printf '%s\n' "${USER:-unknown}"
+    fi
+}
+
+os_name() {
+    if [ -r /etc/os-release ] && have_command awk; then
+        # Read PRETTY_NAME without sourcing the file.
+        awk -F= '
+            $1 == "PRETTY_NAME" {
+                value = $2
+                gsub(/^"/, "", value)
+                gsub(/"$/, "", value)
+                print value
+                found = 1
+                exit
+            }
+            END {
+                if (!found) {
+                    exit 1
+                }
+            }
+        ' /etc/os-release 2>/dev/null || print_line "unknown"
+    else
+        print_line "unknown"
+    fi
+}
+
+memory_usage() {
+    if [ -r /proc/meminfo ] && have_command awk; then
+        awk '
+            $1 == "MemTotal:" { total = $2 }
+            $1 == "MemAvailable:" { available = $2 }
+            END {
+                if (total > 0 && available > 0) {
+                    used = total - available
+                    printf "%.0f MiB used / %.0f MiB total\n", used / 1024, total / 1024
+                } else {
+                    print "unavailable"
+                }
+            }
+        ' /proc/meminfo 2>/dev/null || print_line "unavailable"
+    else
+        print_line "unavailable"
+    fi
+}
+
+disk_usage_root() {
+    if have_command df && have_command awk; then
+        df -h / 2>/dev/null | awk 'NR == 2 { print $3 " used / " $2 " total (" $5 " used)" }' || print_line "unavailable"
+    else
+        print_line "unavailable"
+    fi
+}
+
+cmd_help() {
+    cat <<EOF
+JonasOS helper CLI
+
+Usage:
+  jonasos <command>
+
+Commands:
+  help      Show this help screen
+  info      Show useful system information
+  update    Update the system with apt-get
+  doctor    Run basic JonasOS sanity checks
+  version   Show helper version
+
+Examples:
+  jonasos help
+  jonasos info
+  sudo jonasos update
+  jonasos doctor
+  jonasos version
+
+GitHub:
+  ${REPO_URL}
+EOF
+}
+
+cmd_info() {
+    print_line "JonasOS system information"
+    print_line
+    printf 'OS:           %s\n' "$(os_name)"
+    printf 'Kernel:       %s\n' "$(uname -r 2>/dev/null || print_line unknown)"
+    printf 'Architecture: %s\n' "$(uname -m 2>/dev/null || print_line unknown)"
+    printf 'Hostname:     %s\n' "$(hostname 2>/dev/null || print_line unknown)"
+    printf 'User:         %s\n' "$(current_user)"
+    printf 'Shell:        %s\n' "${SHELL:-unknown}"
+
+    if have_command uptime; then
+        printf 'Uptime:       %s\n' "$(uptime 2>/dev/null || print_line unavailable)"
+    else
+        print_line "Uptime:       unavailable"
+    fi
+
+    printf 'Disk (/):     %s\n' "$(disk_usage_root)"
+    printf 'Memory:       %s\n' "$(memory_usage)"
+    printf 'Repository:   %s\n' "$REPO_URL"
+}
+
+cmd_update() {
+    if [ "$(id -u)" -ne 0 ]; then
+        print_line "Root privileges are required to update JonasOS."
+        print_line "Run: sudo jonasos update"
+        exit 1
+    fi
+
+    if ! have_command apt-get; then
+        print_line "Error: apt-get was not found on this system."
+        exit 1
+    fi
+
+    print_line "Updating package lists..."
+    apt-get update
+
+    print_line
+    print_line "Upgrading installed packages..."
+    apt-get upgrade
+
+    print_line
+    print_line "Removing unused packages..."
+    apt-get autoremove
+
+    print_line
+    print_line "Cleaning package cache..."
+    apt-get clean
+
+    print_line
+    print_line "JonasOS update complete."
+}
+
+doctor_ok() {
+    printf 'OK   %s\n' "$1"
+}
+
+doctor_warn() {
+    printf 'WARN %s\n' "$1"
+}
+
+doctor_fail() {
+    printf 'FAIL %s\n' "$1"
+}
+
+cmd_doctor() {
+    failures=0
+    system_name="$(uname -s 2>/dev/null || print_line unknown)"
+
+    print_line "JonasOS doctor"
+    print_line
+
+    if have_command apt-get; then
+        doctor_ok "apt-get is available"
+    elif [ "$system_name" = "Linux" ]; then
+        doctor_fail "apt-get is missing"
+        failures=$((failures + 1))
+    else
+        doctor_warn "apt-get is missing; this is expected on non-Debian build hosts"
+    fi
+
+    if [ -r /etc/os-release ]; then
+        doctor_ok "/etc/os-release is readable"
+    elif [ "$system_name" = "Linux" ]; then
+        doctor_fail "/etc/os-release is missing or unreadable"
+        failures=$((failures + 1))
+    else
+        doctor_warn "/etc/os-release is missing; this is expected on non-Linux build hosts"
+    fi
+
+    printf 'OK   system type: %s\n' "$system_name"
+
+    if have_command getent; then
+        if getent hosts deb.debian.org >/dev/null 2>&1; then
+            doctor_ok "DNS lookup for deb.debian.org succeeded"
+        else
+            doctor_warn "DNS lookup for deb.debian.org failed"
+        fi
+    else
+        doctor_warn "getent is not available; skipping DNS check"
+    fi
+
+    if [ "$(id -u)" -eq 0 ]; then
+        doctor_ok "running as root"
+    else
+        doctor_ok "running as normal user: $(current_user)"
+    fi
+
+    print_line
+    if [ "$failures" -gt 0 ]; then
+        print_line "Doctor found serious failures."
+        exit 1
+    fi
+
+    print_line "Doctor checks completed."
+}
+
+cmd_version() {
+    printf 'jonasos %s\n' "$VERSION"
+}
+
+main() {
+    command_name="${1:-help}"
+
+    case "$command_name" in
+        help|-h|--help)
+            cmd_help
+            ;;
+        info)
+            cmd_info
+            ;;
+        update)
+            cmd_update
+            ;;
+        doctor)
+            cmd_doctor
+            ;;
+        version|-v|--version)
+            cmd_version
+            ;;
+        *)
+            printf 'Error: unknown command: %s\n\n' "$command_name" >&2
+            cmd_help >&2
+            exit 2
+            ;;
+    esac
+}
+
+main "$@"
