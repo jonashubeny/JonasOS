@@ -3,7 +3,17 @@ set -euo pipefail
 
 mkdir -p out
 
-systemd-inhibit --what=sleep --why="Custom ISO build" sudo podman run --rm -it --privileged \
+# Hold sleep/idle/lid inhibitor for the entire build, then release on exit
+systemd-inhibit \
+  --what=sleep:idle:handle-lid-switch \
+  --why="JonasOS ISO build in progress" \
+  --who="build_iso.sh" \
+  --mode=block \
+  sleep infinity &
+INHIBIT_PID=$!
+trap "kill $INHIBIT_PID 2>/dev/null || true" EXIT
+
+sudo podman run --rm -it --privileged \
   -v "$PWD:/work:Z" \
   -v "$PWD/out:/out:Z" \
   debian:bookworm \
