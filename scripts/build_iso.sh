@@ -3,7 +3,7 @@ set -euo pipefail
 
 mkdir -p out
 
-sudo podman run --rm -it --privileged \
+systemd-inhibit --what=sleep --why="Custom ISO build" sudo podman run --rm -it --privileged \
   -v "$PWD:/work:Z" \
   -v "$PWD/out:/out:Z" \
   debian:bookworm \
