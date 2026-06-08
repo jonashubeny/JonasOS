@@ -1,0 +1,30 @@
+---
+componentName: debian
+
+welcomeStyleCalamares: false
+
+strings:
+  productName:         "JonasOS"
+  shortProductName:    "JonasOS"
+  version:             "1.0"
+  shortVersion:        "1.0"
+  versionedName:       "JonasOS 1.0"
+  shortVersionedName:  "JonasOS 1.0"
+  bootloaderEntryName: "JonasOS"
+  productUrl:          "https://github.com/jonashubeny/JonasOS"
+  supportUrl:          "https://github.com/jonashubeny/JonasOS/issues"
+  knownIssuesUrl:      "https://github.com/jonashubeny/JonasOS/issues"
+  releaseNotesUrl:     "https://github.com/jonashubeny/JonasOS"
+
+images:
+  productLogo:         "logo.png"
+  productIcon:         "logo.png"
+  productWelcome:      "welcome.png"
+
+slideshow:             "show.qml"
+
+style:
+  sidebarBackground:    "#1e1e2e"
+  sidebarText:          "#cdd6f4"
+  sidebarTextSelect:    "#1e1e2e"
+  sidebarTextHighlight: "#cba6f7"
