@@ -1,89 +1,96 @@
-# JonasOS — plán dalších kroků
+# JonasOS — Roadmap
 
-Stav k 3. 9. 2026. Funguje: live-build pipeline, Calamares instalátor,
-Arc-Red téma, `jonasos` CLI. Chybí to hlavní — po bootu se systém pořád
-hlásí a vypadá jako Debian.
-
----
-
-## 0. Bugy k opravě hned
-
-- [ ] **`build/live-build/auto/config:6` má `--architectures arm64`**, ale
-      `out/live-image-amd64.hybrid.iso` je amd64 a volume label hlásí
-      `Debian bullseye`. Buď ISO neodpovídá configu, nebo `lb config`
-      v kontejneru auto/config ignoruje. Rozseknout dřív, než se na to
-      začne cokoliv vrstvit — jinak není jasné, co se vlastně staví.
-- [ ] **Chybí `non-free-firmware`** v archive-areas → na většině notebooků
-      nepojede Wi-Fi ani grafika AMD/NVIDIA. Pro reálné použití zásadní.
-- [ ] `config/includes.chroot/etc/skel/.bashrc:11` má dvakrát `HISTSIZE`,
-      druhý má být `HISTFILESIZE`.
+Status as of 2026-09-03. Working: live-build pipeline, Calamares installer,
+Arc-Red theme, `jonasos` CLI. What's missing is the main thing — after boot
+the system still identifies and looks like plain Debian.
 
 ---
 
-## 1. Identita systému
+## 0. Bugs to fix first
 
-Tohle je to, co dělá OS "můj". Doporučený start.
+- [ ] **`build/live-build/auto/config:6` sets `--architectures arm64`**, yet
+      `out/live-image-amd64.hybrid.iso` is amd64 and its volume label reads
+      `Debian bullseye`. Either the ISO doesn't match the config, or
+      `lb config` inside the container ignores auto/config. Resolve this
+      before layering anything else on top — otherwise it's unclear what is
+      actually being built.
+- [ ] **`non-free-firmware` is missing** from archive-areas → Wi-Fi and
+      AMD/NVIDIA graphics won't work on most laptops. Critical for real use.
+- [ ] `config/includes.chroot/etc/skel/.bashrc:11` declares `HISTSIZE` twice;
+      the second one should be `HISTFILESIZE`.
+
+---
+
+## 1. System identity
+
+This is what makes the OS "mine". Recommended starting point.
 
 - [ ] `/etc/os-release` → `NAME="JonasOS"`, `PRETTY_NAME`, `HOME_URL`,
-      vlastní `VERSION` — nový `config/hooks/normal/9010-branding.hook.chroot`
-- [ ] `/etc/issue` a `/etc/motd` — stejný hook, branding v TTY
+      custom `VERSION` — new `config/hooks/normal/9010-branding.hook.chroot`
+- [ ] `/etc/issue` and `/etc/motd` — same hook, branding on TTY
 - [ ] `--iso-volume "JonasOS"`, `--iso-application`, `--iso-publisher`
-      v `auto/config`, aby se ISO nejmenovalo "Debian bullseye"
+      in `auto/config` so the ISO isn't labelled "Debian bullseye"
 - [ ] `lb config --hostname jonasos --username jonas`
-- [ ] **GRUB téma** (barvy + logo v boot menu) — `includes.binary/boot/grub/`.
-      První věc, kterou uživatel vidí.
-- [ ] **Plymouth splash** — balíček + hook, boot bez textové stěny
+- [ ] **GRUB theme** (colors + logo in the boot menu) —
+      `includes.binary/boot/grub/`. The very first thing a user sees.
+- [ ] **Plymouth splash** — package + hook, boot without the wall of text
 
-## 2. Desktop, aby nevypadal jako holý XFCE
+## 2. Desktop that doesn't look like bare XFCE
 
-Aktuálně existuje jen `xsettings.xml` a `xfwm4.xml`. Chybí:
+Right now only `xsettings.xml` and `xfwm4.xml` exist. Missing:
 
-- [ ] **`xfce4-panel.xml`** — bez něj XFCE při prvním startu vyhodí dialog
-      "Default / One empty panel". Vlastní layout panelu = okamžitě jiný OS.
-- [ ] **`xfce4-desktop.xml` + vlastní tapeta** v `usr/share/backgrounds/jonasos/`
-- [ ] **LightDM greeter** — `lightdm-gtk-greeter.conf` s pozadím, tématem, logem
-- [ ] **`xfce4-terminal.xml`** — barevné schéma ladící s Arc-Red
-- [ ] **Ikony** — teď je `IconThemeName=gnome`, což je fallback.
-      Papirus-Red nebo vlastní sada.
-- [ ] **`xfce4-keyboard-shortcuts.xml`** — klávesové zkratky napevno
+- [ ] **`xfce4-panel.xml`** — without it XFCE shows the
+      "Default / One empty panel" dialog on first start. A custom panel
+      layout instantly reads as a different OS.
+- [ ] **`xfce4-desktop.xml` + custom wallpaper** in
+      `usr/share/backgrounds/jonasos/`
+- [ ] **LightDM greeter** — `lightdm-gtk-greeter.conf` with background,
+      theme, logo
+- [ ] **`xfce4-terminal.xml`** — color scheme matching Arc-Red
+- [ ] **Icons** — currently `IconThemeName=gnome`, which is a fallback.
+      Papirus-Red or a custom set.
+- [ ] **`xfce4-keyboard-shortcuts.xml`** — shipped keyboard shortcuts
 
-## 3. `jonasos` CLI jako skutečná featura
+## 3. `jonasos` CLI as a real feature
 
-Teď umí `help / info / update / doctor / version`. Aby to nebylo jen demo:
+Currently does `help / info / update / doctor / version`. To make it more
+than a demo:
 
-- [ ] `jonasos version` číst z `/etc/os-release` místo hardcoded `VERSION="0.1.0"`
-- [ ] `jonasos setup` — post-install průvodce (jazyk, sady aplikací, dotfiles)
-- [ ] `jonasos install <bundle>` — předdefinované sady (`dev`, `media`, `office`)
-- [ ] `jonasos theme <light|dark>` — přepínač přes `xfconf-query`
-- [ ] `jonasos backup` — tarball `~/.config` + seznam balíčků
-- [ ] bash completion do `/usr/share/bash-completion/completions/jonasos`
+- [ ] `jonasos version` should read `/etc/os-release` instead of the
+      hardcoded `VERSION="0.1.0"`
+- [ ] `jonasos setup` — post-install wizard (language, app bundles, dotfiles)
+- [ ] `jonasos install <bundle>` — predefined sets (`dev`, `media`, `office`)
+- [ ] `jonasos theme <light|dark>` — switcher via `xfconf-query`
+- [ ] `jonasos backup` — tarball of `~/.config` + package list
+- [ ] bash completion in `/usr/share/bash-completion/completions/jonasos`
 
-## 4. Uvítací aplikace
+## 4. Welcome application
 
-- [ ] První spuštění → GTK/YAD okno: "Vítej v JonasOS", výběr témat,
-      tlačítko instalace, odkaz na blog. Tohle dělá Mint i Zorin a je to
-      přesně to, co odlišuje "distro" od "Debianu s tématem".
-      Napojit na `jonasos setup`.
+- [ ] First launch → GTK/YAD window: "Welcome to JonasOS", theme picker,
+      install button, link to the blog. Mint and Zorin both do this, and
+      it's exactly what separates "a distro" from "Debian with a theme".
+      Wire it up to `jonasos setup`.
 
-## 5. Infrastruktura
+## 5. Infrastructure
 
-- [ ] **CI** — současný workflow jen testuje existenci dvou souborů.
-      Přidat `shellcheck` na skripty + validaci, že každý balíček
-      v package-lists reálně existuje v Debianu.
-- [ ] **Build ISO v GitHub Actions** + automatický release s checksumem
-      při tagu → skutečné vydávané verze
-- [ ] **`VERSION` soubor + CHANGELOG**, ze kterého se plní branding
-      i Calamares
-- [ ] **Calamares dodělat**: chybí modul `packages` (odstranit instalátor
-      z nainstalovaného systému), `displaymanager`, `removeuser`.
-      Navíc `settings.conf:9` deklaruje instanci `sources-final`, která
-      není v sequence a config k ní neexistuje — mrtvý kód po commitu `fd7cddf`.
-- [ ] **Debian 13 Trixie** místo bookworm — novější XFCE 4.20, delší podpora
+- [ ] **CI** — the current workflow only checks that two files exist.
+      Add `shellcheck` on the scripts plus validation that every package
+      in package-lists actually exists in Debian.
+- [ ] **Build the ISO in GitHub Actions** + automatic release with a
+      checksum on tag → real, published versions
+- [ ] **`VERSION` file + CHANGELOG** feeding both the branding and Calamares
+- [ ] **Finish Calamares**: missing the `packages` module (remove the
+      installer from the installed system), `displaymanager`, `removeuser`.
+      Also `settings.conf:9` declares a `sources-final` instance that is
+      not in the sequence and has no config file — dead code left over
+      from commit `fd7cddf`.
+- [ ] **Debian 13 Trixie** instead of bookworm — newer XFCE 4.20, longer
+      support window
 
 ---
 
-## Doporučené pořadí
+## Suggested order
 
-Začít **Fází 1**, konkrétně trojicí `os-release` + `iso-volume` + arch bug.
-Je to málo práce, ale poprvé po tom nabootuje něco, co se samo prohlásí
-za JonasOS.
+Start with **Phase 1**, specifically the trio of `os-release` + `iso-volume`
++ the arch bug. It's little work, but afterwards the system boots and
+announces itself as JonasOS for the first time.
