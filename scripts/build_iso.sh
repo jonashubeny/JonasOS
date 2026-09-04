@@ -3,6 +3,8 @@ set -euo pipefail
 
 mkdir -p out
 
+rm -rf out/*
+
 # Hold sleep/idle/lid inhibitor for the entire build, then release on exit
 systemd-inhibit \
   --what=sleep:idle:handle-lid-switch \
