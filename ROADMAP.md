@@ -2,8 +2,7 @@
 
 Status as of 2026-09-03. Working: live-build pipeline, Calamares installer,
 Arc-Red theme, `jonasos` CLI. What's missing is the main thing — after boot
-the system still identifies and looks like plain Debian.
-
+the system still identifies and looks like plain Debia
 ---
 
 ## 0. Bugs to fix first

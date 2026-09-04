@@ -3,6 +3,7 @@ set -e
 
 lb config noauto \
   --distribution bookworm \
-  --architectures arm64 \
+  --architectures amd64 \
   --binary-images iso-hybrid \
   --bootloaders grub-efi
+--image-name "jonasos-0.1"
