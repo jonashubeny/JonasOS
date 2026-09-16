@@ -5,5 +5,6 @@ lb config noauto \
   --distribution bookworm \
   --architectures amd64 \
   --binary-images iso-hybrid \
-  --bootloaders grub-efi
---image-name "jonasos-0.1"
+  --bootloaders grub-efi \
+  --image-name "jonasos-0.1" \
+  --archive-areas "main contrib non-free non-free-firmware"
