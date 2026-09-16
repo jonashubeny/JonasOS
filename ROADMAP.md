@@ -7,7 +7,7 @@ the system still identifies and looks like plain Debia
 
 ## 0. Bugs to fix first
 
-- [ ] **`build/live-build/auto/config:6` sets `--architectures arm64`**, yet
+- [x] **`build/live-build/auto/config:6` sets `--architectures arm64`**, yet
       `out/live-image-amd64.hybrid.iso` is amd64 and its volume label reads
       `Debian bullseye`. Either the ISO doesn't match the config, or
       `lb config` inside the container ignores auto/config. Resolve this
