@@ -2,7 +2,12 @@
 
 Status as of 2026-09-03. Working: live-build pipeline, Calamares installer,
 Arc-Red theme, `jonasos` CLI. What's missing is the main thing — after boot
-the system still identifies and looks like plain Debia
+the system still identifies and looks like plain Debian.
+
+Long term, JonasOS drops Debian entirely and is built from scratch on the
+Linux kernel; see [§6](#6-long-term-from-scratch-base) and #27. Phases 0–5
+apply to the current Debian-based `v0.x`.
+
 ---
 
 ## 0. Bugs to fix first
@@ -13,7 +18,7 @@ the system still identifies and looks like plain Debia
       `lb config` inside the container ignores auto/config. Resolve this
       before layering anything else on top — otherwise it's unclear what is
       actually being built.
-- [ ] **`non-free-firmware` is missing** from archive-areas → Wi-Fi and
+- [x] **`non-free-firmware` is missing** from archive-areas → Wi-Fi and
       AMD/NVIDIA graphics won't work on most laptops. Critical for real use.
 - [ ] `config/includes.chroot/etc/skel/.bashrc:11` declares `HISTSIZE` twice;
       the second one should be `HISTFILESIZE`.
@@ -85,6 +90,38 @@ than a demo:
       from commit `fd7cddf`.
 - [ ] **Debian 13 Trixie** instead of bookworm — newer XFCE 4.20, longer
       support window
+
+## 6. Long term: from-scratch base
+
+Tracked in [#27](https://github.com/jonashubeny/JonasOS/issues/27). Replace
+Debian with a system built from source on top of the Linux kernel, following
+[LFS](https://www.linuxfromscratch.org/lfs/) /
+[BLFS](https://www.linuxfromscratch.org/blfs/). Lives in a new `scratch/`
+directory and runs in parallel with the Debian build until it reaches a desktop.
+
+**Decisions first**
+- [ ] libc: glibc vs. musl
+- [ ] init: systemd vs. runit / s6 / OpenRC
+- [ ] package management: none (immutable image), own minimal tool, or
+      an existing one (`pacman`, `xbps`)
+- [ ] build tooling: shell scripts vs. per-package Makefiles
+
+**Milestone 1: boot to a shell in QEMU**
+- [ ] Containerized build environment (Podman, like `scripts/build_iso.sh`)
+- [ ] Cross toolchain script (binutils, GCC, libc)
+- [ ] Kernel `.config` in the repo + build script
+- [ ] Minimal rootfs (busybox is fine at first) + initramfs
+- [ ] `scripts/run_scratch_vm.sh`
+
+**Later**
+- [ ] Full base system (coreutils, bash, util-linux, …) instead of busybox
+- [ ] Bootloader + bootable ISO / disk image
+- [ ] Xorg/Wayland + XFCE built from source
+- [ ] Installer replacing Calamares
+- [ ] Update mechanism
+
+Carries over from the Debian version: branding, skel dotfiles, the `jonasos`
+CLI, docs. Dropped: `build/live-build/`, Debian package lists, Calamares config.
 
 ---
 

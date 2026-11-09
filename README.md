@@ -1,6 +1,8 @@
 # JonasOS
 
-Personalized Debian-based OS project focused on a clean XFCE desktop and useful defaults.
+Personalized Linux OS project focused on a clean XFCE desktop and useful defaults.
+The current version (`v0.x`) is built on Debian; the long-term plan is to build JonasOS
+from scratch on top of the Linux kernel (see [Future: from scratch](#future-from-scratch)).
 
 Read more:
 - https://blog.jonashubeny.dev/posts/jonasos-beginning/
@@ -13,6 +15,21 @@ Read more:
 - Basic desktop apps (for example Firefox ESR, Mousepad, Thunar, Xfce utilities)
 - Networking and audio defaults (NetworkManager + PulseAudio packages)
 - Shell defaults for new users via `/etc/skel` (`.bashrc`, `.profile`)
+
+## Future: from scratch
+
+JonasOS is moving away from Debian. The goal is to build the whole system from scratch on
+top of the Linux kernel: own toolchain, userland, kernel config and build scripts, with no
+`live-build`, `apt` or Debian packages. The approach follows
+[Linux From Scratch](https://www.linuxfromscratch.org/).
+
+- The Debian-based build in `build/live-build/` stays the working version until the
+  from-scratch build boots to a desktop.
+- The from-scratch build will live in its own directory (e.g. `scratch/`) next to it.
+- First milestone: a self-built kernel + minimal userland booting to a shell in QEMU.
+
+Plan, open decisions (libc, init, package management) and progress:
+[#27](https://github.com/jonashubeny/JonasOS/issues/27) and [ROADMAP.md](ROADMAP.md#6-long-term-from-scratch-base).
 
 ## Project structure
 
